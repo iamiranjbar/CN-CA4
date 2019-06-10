@@ -57,12 +57,19 @@ Vagrant.configure("2") do |config|
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
-    rm -fv /etc/ssh/ssh_host_*
-    dpkg-reconfigure openssh-server
-    add-apt-repository ppa:openjdk-r/ppa -y
-    apt-get update
-    echo "\n----- Installing Java 8 ------\n"
-    apt-get -y install openjdk-8-jdk
-    update-alternatives --config java
+    sudo echo "LANG=en_US.UTF-8" >> /etc/environment
+    sudo echo "LANGUAGE=en_US.UTF-8" >> /etc/environment
+    sudo echo "LC_ALL=en_US.UTF-8" >> /etc/environment
+    sudo echo "LC_CTYPE=en_US.UTF-8" >> /etc/environment
+    sudo add-apt-repository -y ppa:webupd8team/java
+    sudo apt-get update
+    sudo apt-get -y upgrade
+    echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections 
+    echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
+    sudo apt-get -y install oracle-java8-installer
+    
+    sudo apt-get install -y xfce4 virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11
+    sudo apt-get install gnome-icon-theme-full tango-icon-theme
+    sudo echo "allowed_users=anybody" > /etc/X11/Xwrapper.config
   SHELL
 end

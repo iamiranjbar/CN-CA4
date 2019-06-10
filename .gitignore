@@ -141,3 +141,4 @@ Temporary Items
 .idea/
 *.iml
 long1.lnx
+.vagrant/

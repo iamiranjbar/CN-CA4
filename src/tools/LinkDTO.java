@@ -13,10 +13,11 @@ public class LinkDTO {
 
     @Override
     public String toString() {
-        return "\n\t\t{" +
+        return "{" +
                 "dst=" + dst.toString() + ",\n\t" +
                 "srcVip='" + srcVip + ",\n\t" +
                 "dstVip='" + dstVip + "\n\t" +
                 '}';
     }
 }
+qw
