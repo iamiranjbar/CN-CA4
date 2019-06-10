@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class LnxParser {
-    public static HostDTO parse(String fileName){
+    public static NodeDTO parse(String fileName){
         try {
             BufferedReader reader = new BufferedReader(new FileReader(fileName));
-            HostDTO node = readOwnData(reader);
+            NodeDTO node = readOwnData(reader);
             node.addLinks(readLinks(reader));
             reader.close();
             return node;
@@ -19,10 +19,10 @@ public class LnxParser {
         }
     }
 
-    public static HostDTO readOwnData(BufferedReader reader) throws IOException {
+    public static NodeDTO readOwnData(BufferedReader reader) throws IOException {
         String line = reader.readLine();
         String[] parts = line.split("\\s+");
-        return new HostDTO(parts[0], Integer.parseInt(parts[1]));
+        return new NodeDTO(parts[0], Integer.parseInt(parts[1]));
     }
 
     public static ArrayList<LinkDTO> readLinks(BufferedReader reader) throws IOException {

@@ -1,9 +1,7 @@
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import node.Interface;
-import routing.DV;
-import tools.HostDTO;
+import tools.NodeDTO;
 import tools.LnxParser;
 
 public class Main {
@@ -16,7 +14,7 @@ public class Main {
 //    	System.out.println(new String(dv.getByteArray()));
 //    	System.out.println(new String(new DV(dv.getByteArray()).getByteArray()));
 //    	new Interface(0, "127.0.0.1","127.0.0.1", 5000,5001).send(new String(dv.getByteArray()));
-		HostDTO hostDTO = LnxParser.parse("long1.lnx");
+		NodeDTO hostDTO = LnxParser.parse("long1.lnx");
 		System.out.println(hostDTO.toString());
 	}
 }

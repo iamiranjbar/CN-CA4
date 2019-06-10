@@ -1,14 +1,26 @@
 package tools;
 
 public class LinkDTO {
-    HostDTO dst;
-    String srcVip;
-    String dstVip;
+    private NodeDTO dst;
+    private String srcVip;
+    private String dstVip;
 
     public LinkDTO(String dstIp, int dstPort, String srcVip, String dstVip) {
-        this.dst = new HostDTO(dstIp, dstPort);
+        this.dst = new NodeDTO(dstIp, dstPort);
         this.srcVip = srcVip;
         this.dstVip = dstVip;
+    }
+
+    public NodeDTO getDst() {
+        return dst;
+    }
+
+    public String getSrcVip() {
+        return srcVip;
+    }
+
+    public String getDstVip() {
+        return dstVip;
     }
 
     @Override
@@ -20,4 +32,3 @@ public class LinkDTO {
                 '}';
     }
 }
-qw
