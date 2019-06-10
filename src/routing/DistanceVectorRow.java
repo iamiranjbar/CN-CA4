@@ -41,6 +41,12 @@ public class DistanceVectorRow {
 		costs = new HashMap<>();
 		fillCosts(array);
 	}
+
+	public void print() {
+		for (String from : costs.keySet()){
+			System.out.print(from + " " + costs.get(from) + " ");
+		}
+	}
 	
 	public void update(String from, int cost) {
 		costs.put(from, cost);

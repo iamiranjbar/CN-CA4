@@ -5,7 +5,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class DV {
-	
+
+	private String myIp;
 	private HashMap<String, DistanceVectorRow> table;
 	
 	public DV() {
@@ -50,11 +51,28 @@ public class DV {
 		distanceVectorRow.update(from, cost);
 		table.put(to, distanceVectorRow);
 	}
-	
-	public void update(DV newDV, String newIp) {
-		// TODO
+
+	public String getMyIp() {
+		return myIp;
 	}
-	
+
+	public void update(DV newDV, String newIp) {
+		this.print();
+		newDV.print();
+
+		int costToNew = getCostTo(newDV.getMyIp());
+		for(String item : table.keySet()) {
+			if (getCostTo(item) > (costToNew + newDV.getCostTo(item))) {
+				update(myIp, item, costToNew + newDV.getCostTo(item));
+			}
+			update(newIp, item, newDV.getCostTo(item));
+		}
+	}
+
+	private int getCostTo(String item) {
+		return table.get(item).getCost(myIp);
+	}
+
 	public byte[] getByteArray() {
 		ArrayList<Byte> result = new ArrayList<>();
 		for (String key : table.keySet()) {
@@ -70,6 +88,14 @@ public class DV {
 		    res[i] = result.get(i).byteValue();
 		}
 		return res;
+	}
+
+	public void print() {
+		for (String to : table.keySet()) {
+			System.out.print(to + " ");
+			table.get(to).print();
+		}
+		System.out.println();
 	}
 
 }

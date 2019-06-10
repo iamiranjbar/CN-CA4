@@ -14,5 +14,6 @@ public class Main {
     	System.out.println(new String(dv.getByteArray()));
     	System.out.println(new String(new DV(dv.getByteArray()).getByteArray()));
     	new Interface(0, "127.0.0.1","127.0.0.1", 5000,5001).send(new String(dv.getByteArray()));
+    	dv.print();
     }
 }
