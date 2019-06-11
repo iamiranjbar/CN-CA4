@@ -58,7 +58,7 @@ public class DV {
 		return myIp;
 	}
 
-	public void update(DV newDV, String newIp) {
+	public void update(DV newDV) {
 		this.print();
 		newDV.print();
 
@@ -67,7 +67,7 @@ public class DV {
 			if (getCostTo(item) > (costToNew + newDV.getCostTo(item))) {
 				update(myIp, item, costToNew + newDV.getCostTo(item));
 			}
-			update(newIp, item, newDV.getCostTo(item));
+			update(newDV.getMyIp(), item, newDV.getCostTo(item));
 		}
 	}
 
