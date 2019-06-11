@@ -9,8 +9,9 @@ public class DV {
 	private String myIp;
 	private HashMap<String, DistanceVectorRow> table;
 	
-	public DV() {
-		table = new HashMap<>();
+	public DV(String myIp) {
+	    table = new HashMap<>();
+	    this.myIp = myIp;
 	}
 	
 	private void fillTable(byte[] array) {
@@ -37,9 +38,10 @@ public class DV {
 		}
 	}
 	
-	public DV(byte[] array) {
+	public DV(byte[] array, String myIp) {
 		table = new HashMap<>();
 		fillTable(array);
+		this.myIp = myIp;
 	}
 	
 	// TODO: this method helps to fill table from lnx file.
