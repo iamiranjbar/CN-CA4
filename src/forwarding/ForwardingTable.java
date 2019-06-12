@@ -12,16 +12,16 @@ public class ForwardingTable {
 		table = new HashMap<>();
 	}
 	
-	public void update(String ip, int port) {
-		table.put(ip, port);
+	public void update(String vIp, int port) {
+		table.put(vIp, port);
 	}
 	
 	public void update(DV dv) {
 		
 	}
 	
-	public int getPort(String ip) {
-		return table.get(ip);
+	public int getPort(String vIp) {
+		return table.get(vIp);
 	}
 
 }
