@@ -6,12 +6,12 @@ import java.util.HashMap;
 
 public class DV {
 
-	private String myIp;
+	private String name;
 	private HashMap<String, DistanceVectorRow> table;
 	
-	public DV(String myIp) {
+	public DV(String name) {
 	    table = new HashMap<>();
-	    this.myIp = myIp;
+	    this.name = name;
 	}
 	
 	private void fillTable(byte[] array) {
@@ -38,14 +38,14 @@ public class DV {
 		}
 	}
 	
-	public DV(byte[] array, String myIp) {
+	public DV(byte[] array, String name) {
 		table = new HashMap<>();
 		fillTable(array);
-		this.myIp = myIp;
+		this.name = name;
 	}
 	
 	// TODO: this method helps to fill table from lnx file.
-	public void update(String from, String to, int cost) {
+	public void update(int from, String to, int cost) {
 		DistanceVectorRow distanceVectorRow = table.get(to);
 		if (distanceVectorRow == null) {
 			distanceVectorRow = new DistanceVectorRow();
@@ -54,25 +54,25 @@ public class DV {
 		table.put(to, distanceVectorRow);
 	}
 
-	public String getMyIp() {
-		return myIp;
+	public String getName() {
+		return name;
 	}
 
 	public void update(DV newDV) {
 		this.print();
 		newDV.print();
 
-		int costToNew = getCostTo(newDV.getMyIp());
+		int costToNew = getCostTo(newDV.getName());
 		for(String item : table.keySet()) {
 			if (getCostTo(item) > (costToNew + newDV.getCostTo(item))) {
-				update(myIp, item, costToNew + newDV.getCostTo(item));
+				update(name, item, costToNew + newDV.getCostTo(item));
 			}
-			update(newDV.getMyIp(), item, newDV.getCostTo(item));
+			update(newDV.getName(), item, newDV.getCostTo(item));
 		}
 	}
 
 	private int getCostTo(String item) {
-		return table.get(item).getCost(myIp);
+		return table.get(item).getCost(name);
 	}
 
 	public byte[] getByteArray() {

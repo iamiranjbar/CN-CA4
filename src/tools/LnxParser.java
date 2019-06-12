@@ -9,7 +9,8 @@ public class LnxParser {
     public static NodeDTO parse(String fileName){
         try {
             BufferedReader reader = new BufferedReader(new FileReader(fileName));
-            NodeDTO node = readOwnData(reader);
+            String nodeName = fileName.split("\\.")[0];
+            NodeDTO node = readOwnData(nodeName, reader);
             node.addLinks(readLinks(reader));
             reader.close();
             return node;
@@ -19,10 +20,10 @@ public class LnxParser {
         }
     }
 
-    public static NodeDTO readOwnData(BufferedReader reader) throws IOException {
+    public static NodeDTO readOwnData(String nodeName, BufferedReader reader) throws IOException {
         String line = reader.readLine();
         String[] parts = line.split("\\s+");
-        return new NodeDTO(parts[0], Integer.parseInt(parts[1]));
+        return new NodeDTO(nodeName, parts[0], Integer.parseInt(parts[1]));
     }
 
     public static ArrayList<LinkDTO> readLinks(BufferedReader reader) throws IOException {

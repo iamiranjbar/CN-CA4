@@ -6,7 +6,7 @@ public class LinkDTO {
     private String dstVip;
 
     public LinkDTO(String dstIp, int dstPort, String srcVip, String dstVip) {
-        this.dst = new NodeDTO(dstIp, dstPort);
+        this.dst = new NodeDTO(null, dstIp, dstPort);
         this.srcVip = srcVip;
         this.dstVip = dstVip;
     }

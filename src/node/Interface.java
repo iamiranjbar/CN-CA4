@@ -27,6 +27,26 @@ public class Interface {
 		datagramSocket.setSoTimeout(800);
 	}
 
+	public int getId() {
+		return id;
+	}
+
+	public String getvIp() {
+		return vIp;
+	}
+
+	public String getReceiverIp() {
+		return receiverIp;
+	}
+
+	public String getRecieverVIp() {
+		return recieverVIp;
+	}
+
+	public int getReceiverPort() {
+		return receiverPort;
+	}
+
 	public void send(String packet) throws UnknownHostException, IOException {
 		datagramSocket.send(new DatagramPacket(packet.getBytes(), packet.getBytes().length,
 				InetAddress.getByName(this.receiverIp), this.receiverPort));
