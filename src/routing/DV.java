@@ -36,13 +36,13 @@ public class DV {
 		}
 	}
 	
-	public DV(byte[] array, String name) {
+	public DV(byte[] array) {
 		table = new HashMap<>();
 		fillTable(array);
 	}
 	
 	// TODO: this method helps to fill table from lnx file.
-	public void update(int from, String to, int cost) {
+	public void update(String from, String to, int cost) {
 		DistanceVectorRow distanceVectorRow = table.get(to);
 		if (distanceVectorRow == null) {
 			distanceVectorRow = new DistanceVectorRow();

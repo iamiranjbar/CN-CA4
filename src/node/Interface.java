@@ -47,8 +47,8 @@ public class Interface {
 		return receiverPort;
 	}
 
-	public void send(String packet) throws UnknownHostException, IOException {
-		datagramSocket.send(new DatagramPacket(packet.getBytes(), packet.getBytes().length,
+	public void send(byte[] packet) throws UnknownHostException, IOException {
+		datagramSocket.send(new DatagramPacket(packet, packet.length,
 				InetAddress.getByName(this.receiverIp), this.receiverPort));
 	}
 	
