@@ -1,78 +1,63 @@
 package routing;
 
+import tools.Serializer;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class DistanceVectorRow {
 	
-	private HashMap<Integer, Integer> costs;
-	
-	public DistanceVectorRow() {
-		costs = new HashMap<>();
-	}
+	private int cost;
+	private int interfaceId;
 	
 	private void fillCosts(byte[] array) {
-//		String temp = new String(array);
-//		String[] splited = temp.split("@");
-//		for(String part : splited) {
-//			String from = "";
-//			int j = 0;
-//			byte[] current = part.getBytes();
-//			int fromIndex = 0;
-//			for (byte item : current) {
-//				if (item == '\0') {
-//					fromIndex++;
-//					break;
-//				}
-//				from += (char)item;
-//				fromIndex++;
-//			}
-//			byte[] row = new byte[current.length-fromIndex];
-//			for(int i = fromIndex; i < current.length; i++) {
-//				row[j++] = current[i];
-//			}
-//			ByteBuffer bf = ByteBuffer.wrap(row);
-//			costs.put(from, bf.getInt());
-		}
+		byte[] rowId = {array[0], array[1]};
+		byte[] rowCost = {array[2], array[3]};
+		ByteBuffer bf = ByteBuffer.wrap(rowId);
+		ByteBuffer bf2 = ByteBuffer.wrap(rowCost);
+		interfaceId = bf.getInt();
+		cost = bf2.getInt();
 	}
 	
 	public DistanceVectorRow(byte[] array) {
-		costs = new HashMap<>();
 		fillCosts(array);
 	}
 
+	public DistanceVectorRow() {
+
+	}
+
 	public void print() {
-		for (int from : costs.keySet()){
-			System.out.print(from + " " + costs.get(from) + " ");
-		}
+		System.out.print(interfaceId + " " + cost + " ");
 	}
 	
-	public void update(String from, int cost) {
-		costs.put(from, cost);
+	public void update(int from, int newCost) {
+//		if (cost > newCost) {
+			this.cost = newCost;
+			this.interfaceId = from;
+//		}
 	}
 	
-	public int getCost(String from) {
-		return costs.get(from);
+	public int getCost() {
+		return this.cost;
 	}
 	
 	public Byte[] getByteArray() {
 		ArrayList<Byte> result = new ArrayList<>();
-		for(int from : costs.keySet()) {
-			for(byte item :  from.getBytes()) {
-				result.add(item);
-			}
-			result.add((byte) '\0');
-			ByteBuffer buffer2 = ByteBuffer.allocate(4);
-			buffer2.putInt(costs.get(from));
-			for(byte item :  buffer2.array()) {
-				result.add(item);
-			}
-			result.add((byte) '@');
+		ByteBuffer buffer = ByteBuffer.allocate(4);
+		buffer.putInt(interfaceId);
+		for(byte item :  buffer.array()) {
+			result.add(item);
+		}
+		ByteBuffer buffer2 = ByteBuffer.allocate(4);
+		buffer2.putInt(cost);
+		for(byte item :  buffer2.array()) {
+			result.add(item);
 		}
 		Byte[] res = new Byte[result.size()];
 		for(int i = 0; i < result.size(); i++) {
-		    res[i] = result.get(i).byteValue();
+			res[i] = result.get(i).byteValue();
 		}
 		return res;
 	}

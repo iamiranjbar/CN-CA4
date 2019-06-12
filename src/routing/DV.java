@@ -6,12 +6,10 @@ import java.util.HashMap;
 
 public class DV {
 
-	private String name;
 	private HashMap<String, DistanceVectorRow> table;
 	
-	public DV(String name) {
+	public DV() {
 	    table = new HashMap<>();
-	    this.name = name;
 	}
 	
 	private void fillTable(byte[] array) {
@@ -41,7 +39,6 @@ public class DV {
 	public DV(byte[] array, String name) {
 		table = new HashMap<>();
 		fillTable(array);
-		this.name = name;
 	}
 	
 	// TODO: this method helps to fill table from lnx file.
@@ -54,25 +51,20 @@ public class DV {
 		table.put(to, distanceVectorRow);
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public void update(DV newDV) {
+	public void update(DV newDV, int interfaceId, String interfaceIp) {
 		this.print();
 		newDV.print();
 
-		int costToNew = getCostTo(newDV.getName());
+		int costToNew = getCostTo(interfaceIp);
 		for(String item : table.keySet()) {
 			if (getCostTo(item) > (costToNew + newDV.getCostTo(item))) {
-				update(name, item, costToNew + newDV.getCostTo(item));
+				update(interfaceId, item, costToNew + newDV.getCostTo(item));
 			}
-			update(newDV.getName(), item, newDV.getCostTo(item));
 		}
 	}
 
 	private int getCostTo(String item) {
-		return table.get(item).getCost(name);
+		return table.get(item).getCost();
 	}
 
 	public byte[] getByteArray() {
@@ -85,10 +77,10 @@ public class DV {
 			result.addAll(Arrays.asList(table.get(key).getByteArray()));
 			result.add((byte) ' ');
 		}
-		byte[] res = new byte[result.size()];
-		for(int i = 0; i < result.size(); i++) {
-		    res[i] = result.get(i).byteValue();
-		}
+        byte[] res = new byte[result.size()];
+        for(int i = 0; i < result.size(); i++) {
+            res[i] = result.get(i).byteValue();
+        }
 		return res;
 	}
 

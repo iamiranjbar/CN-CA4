@@ -23,7 +23,7 @@ public class Node {
 		this.interfaces = new ArrayList<>();
 		this.fillInterfaces(nodeDTO);
 		this.forwardingTable = new ForwardingTable();
-		this.distanceVector = new DV(this.name);
+		this.distanceVector = new DV();
 		this.fillDV();
 	}
 
@@ -37,9 +37,8 @@ public class Node {
 	}
 
 	private void fillDV(){
-		this.distanceVector.update(this.name, this.name, 0);
 		for (Interface face: interfaces){
-			this.distanceVector.update(this.name, face.getRecieverVIp(), 1);
+			this.distanceVector.update(face.getId(), face.getRecieverVIp(), 1);
 		}
 	}
 }
