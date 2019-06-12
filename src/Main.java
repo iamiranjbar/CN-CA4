@@ -1,3 +1,4 @@
+import node.Node;
 import routing.DV;
 import tools.LnxParser;
 
@@ -17,6 +18,8 @@ public class Main {
 //		dv.update(dv2);
 //		dv.print();
 //		Minterface.send(new String(dv.getByteArray()));
-		System.out.println(LnxParser.parse("long1.lnx"));
+//		System.out.println(LnxParser.parse("long1.lnx"));
+		Node node = new Node("long1.lnx");
+		node.notifyNeighbors();
 	}
 }

@@ -6,34 +6,34 @@ import java.util.HashMap;
 
 public class DistanceVectorRow {
 	
-	private HashMap<Integer, Integer> costs;
+	private HashMap<String, Integer> costs;
 	
 	public DistanceVectorRow() {
 		costs = new HashMap<>();
 	}
 	
 	private void fillCosts(byte[] array) {
-//		String temp = new String(array);
-//		String[] splited = temp.split("@");
-//		for(String part : splited) {
-//			String from = "";
-//			int j = 0;
-//			byte[] current = part.getBytes();
-//			int fromIndex = 0;
-//			for (byte item : current) {
-//				if (item == '\0') {
-//					fromIndex++;
-//					break;
-//				}
-//				from += (char)item;
-//				fromIndex++;
-//			}
-//			byte[] row = new byte[current.length-fromIndex];
-//			for(int i = fromIndex; i < current.length; i++) {
-//				row[j++] = current[i];
-//			}
-//			ByteBuffer bf = ByteBuffer.wrap(row);
-//			costs.put(from, bf.getInt());
+		String temp = new String(array);
+		String[] splited = temp.split("@");
+		for(String part : splited) {
+			String from = "";
+			int j = 0;
+			byte[] current = part.getBytes();
+			int fromIndex = 0;
+			for (byte item : current) {
+				if (item == '\0') {
+					fromIndex++;
+					break;
+				}
+				from += (char)item;
+				fromIndex++;
+			}
+			byte[] row = new byte[current.length-fromIndex];
+			for(int i = fromIndex; i < current.length; i++) {
+				row[j++] = current[i];
+			}
+			ByteBuffer bf = ByteBuffer.wrap(row);
+			costs.put(from, bf.getInt());
 		}
 	}
 	
@@ -43,7 +43,7 @@ public class DistanceVectorRow {
 	}
 
 	public void print() {
-		for (int from : costs.keySet()){
+		for (String from : costs.keySet()){
 			System.out.print(from + " " + costs.get(from) + " ");
 		}
 	}
@@ -58,7 +58,7 @@ public class DistanceVectorRow {
 	
 	public Byte[] getByteArray() {
 		ArrayList<Byte> result = new ArrayList<>();
-		for(int from : costs.keySet()) {
+		for(String from : costs.keySet()) {
 			for(byte item :  from.getBytes()) {
 				result.add(item);
 			}

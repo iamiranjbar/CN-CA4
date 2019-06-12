@@ -1,11 +1,13 @@
 package node;
 
 import forwarding.ForwardingTable;
+import ip.IPDatagaram;
 import routing.DV;
 import tools.LinkDTO;
 import tools.LnxParser;
 import tools.NodeDTO;
 
+import java.io.IOException;
 import java.net.SocketException;
 import java.util.ArrayList;
 
@@ -21,10 +23,11 @@ public class Node {
 		this.name = nodeDTO.getName();
 		this.ip = nodeDTO.getIp();
 		this.interfaces = new ArrayList<>();
-		this.fillInterfaces(nodeDTO);
+		this.interfaces.add(new Interface(0, "192.168.0.1", 5001, "127.0.0.1","192.168.0.2",  5000));
+//		this.fillInterfaces(nodeDTO);
 		this.forwardingTable = new ForwardingTable();
 		this.distanceVector = new DV(this.name);
-		this.fillDV();
+//		this.fillDV();
 	}
 
 	private void fillInterfaces(NodeDTO nodeDTO) throws SocketException {
@@ -36,10 +39,19 @@ public class Node {
 		}
 	}
 
-	private void fillDV(){
-		this.distanceVector.update(this.name, this.name, 0);
-		for (Interface face: interfaces){
-			this.distanceVector.update(this.name, face.getRecieverVIp(), 1);
+//	private void fillDV(){
+//		this.distanceVector.update(this.name, this.name, 0);
+//		for (Interface face: interfaces){
+//			this.distanceVector.update(this.name, face.getRecieverVIp(), 1);
+//		}
+//	}
+
+	public void notifyNeighbors() throws IOException {
+		byte[] updatedDV = this.distanceVector.getByteArray();
+		for (Interface face:interfaces) {
+			IPDatagaram ipDatagaram = new IPDatagaram(face.getvIp(), face.getRecieverVIp(), updatedDV, updatedDV.length,
+					200, 150);
+			face.send(ipDatagaram.getBytes());
 		}
 	}
 }
