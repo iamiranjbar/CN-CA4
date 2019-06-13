@@ -11,20 +11,19 @@ public class Interface {
 	
 	private int id;
 	private String vIp;
+	private String receiverVIp;
 	private String receiverIp;
-	private String recieverVIp;
 	private int receiverPort;
 	private DatagramSocket datagramSocket;
 
-	public Interface(int id, String vIp, int port, String receiverIp, String recieverVIp, int receiverPort)
+	public Interface(int id, String vIp, String receiverIp, String recieverVIp, int receiverPort, DatagramSocket datagramSocket)
 			throws SocketException {
 		this.id = id;
 		this.vIp = vIp;
 		this.receiverIp = receiverIp;
-		this.recieverVIp = recieverVIp;
+		this.receiverVIp = recieverVIp;
 		this.receiverPort = receiverPort;
-		datagramSocket = new DatagramSocket(port);
-		datagramSocket.setSoTimeout(800);
+		this.datagramSocket = datagramSocket;
 	}
 
 	public int getId() {
@@ -39,8 +38,8 @@ public class Interface {
 		return receiverIp;
 	}
 
-	public String getRecieverVIp() {
-		return recieverVIp;
+	public String getReceiverVIp() {
+		return receiverVIp;
 	}
 
 	public int getReceiverPort() {
@@ -52,10 +51,10 @@ public class Interface {
 				InetAddress.getByName(this.receiverIp), this.receiverPort));
 	}
 	
-	public String receive() throws IOException {
+	public byte[] receive() throws IOException {
 		byte[] data = new byte[1400];
     	DatagramPacket p = new DatagramPacket(data, data.length);
 		datagramSocket.receive(p);
-		return new String(p.getData());
+		return p.getData();
 	}
 }

@@ -12,8 +12,8 @@ public class DistanceVectorRow {
 	private int interfaceId;
 	
 	private void fillCosts(byte[] array) {
-		byte[] rowId = {array[0], array[1]};
-		byte[] rowCost = {array[2], array[3]};
+		byte[] rowId = {array[0], array[1], array[2], array[3]};
+		byte[] rowCost = {array[4], array[5], array[6], array[7]};
 		ByteBuffer bf = ByteBuffer.wrap(rowId);
 		ByteBuffer bf2 = ByteBuffer.wrap(rowCost);
 		interfaceId = bf.getInt();

@@ -7,7 +7,8 @@ import java.util.HashMap;
 public class DV {
 
 	private HashMap<String, DistanceVectorRow> table;
-	
+	private boolean isChanged = true;
+
 	public DV() {
 	    table = new HashMap<>();
 	}
@@ -42,7 +43,7 @@ public class DV {
 	}
 	
 	// TODO: this method helps to fill table from lnx file.
-	public void update(String from, String to, int cost) {
+	public void update(int from, String to, int cost) {
 		DistanceVectorRow distanceVectorRow = table.get(to);
 		if (distanceVectorRow == null) {
 			distanceVectorRow = new DistanceVectorRow();
@@ -54,11 +55,11 @@ public class DV {
 	public void update(DV newDV, int interfaceId, String interfaceIp) {
 		this.print();
 		newDV.print();
-
 		int costToNew = getCostTo(interfaceIp);
 		for(String item : table.keySet()) {
 			if (getCostTo(item) > (costToNew + newDV.getCostTo(item))) {
 				update(interfaceId, item, costToNew + newDV.getCostTo(item));
+				this.isChanged = true;
 			}
 		}
 	}
@@ -92,4 +93,11 @@ public class DV {
 		System.out.println();
 	}
 
+	public void setUnchanged() {
+		isChanged = false;
+	}
+
+	public boolean isChanged(){
+		return isChanged;
+	}
 }
