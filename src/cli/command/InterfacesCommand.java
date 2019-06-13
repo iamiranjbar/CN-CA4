@@ -6,8 +6,7 @@ public class InterfacesCommand implements Command {
 
     public InterfacesCommand(){ }
 
-    @Override
-    public void execute() {
-        Node.getInstance().showInterfacesInfo();
+    public void execute(Node node) {
+        node.showInterfacesInfo();
     }
 }

@@ -3,6 +3,7 @@ package routing;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Set;
 
 public class DV {
 
@@ -53,12 +54,22 @@ public class DV {
 	}
 
 	public void update(DV newDV, int interfaceId, String interfaceIp) {
-		this.print();
-		newDV.print();
+//		this.print();
+//		newDV.print();
 		int costToNew = getCostTo(interfaceIp);
 		for(String item : table.keySet()) {
-			if (getCostTo(item) > (costToNew + newDV.getCostTo(item))) {
-				update(interfaceId, item, costToNew + newDV.getCostTo(item));
+			try {
+				if (getCostTo(item) > (costToNew + newDV.getCostTo(item))) {
+					update(interfaceId, item, costToNew + newDV.getCostTo(item));
+					this.isChanged = true;
+				}
+			} catch(Exception e) {
+				
+			}
+		}
+		for (String ip : newDV.getDestinations()) {
+			if (!table.containsKey(ip)) {
+				update(interfaceId, ip, costToNew + newDV.getCostTo(ip));
 				this.isChanged = true;
 			}
 		}
@@ -66,6 +77,10 @@ public class DV {
 
 	private int getCostTo(String item) {
 		return table.get(item).getCost();
+	}
+	
+	public int getInterfaceOfIp(String ip) {
+		return table.get(ip).getInterfaceId();
 	}
 
 	public byte[] getByteArray() {
@@ -89,8 +104,9 @@ public class DV {
 		for (String to : table.keySet()) {
 			System.out.print(to + " ");
 			table.get(to).print();
+			System.out.println();
 		}
-		System.out.println();
+//		System.out.println();
 	}
 
 	public void setUnchanged() {
@@ -99,5 +115,9 @@ public class DV {
 
 	public boolean isChanged(){
 		return isChanged;
+	}
+
+	public Set<String> getDestinations() {
+		return table.keySet();
 	}
 }

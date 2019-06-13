@@ -43,6 +43,10 @@ public class DistanceVectorRow {
 		return this.cost;
 	}
 	
+	public int getInterfaceId() {
+		return interfaceId;
+	}
+	
 	public Byte[] getByteArray() {
 		ArrayList<Byte> result = new ArrayList<>();
 		ByteBuffer buffer = ByteBuffer.allocate(4);

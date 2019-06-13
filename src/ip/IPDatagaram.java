@@ -20,7 +20,9 @@ public class IPDatagaram{
         this.TTL = TTL;
     }
 
-    public IPDatagaram(byte[] serializedByteArray) {
+    public IPDatagaram(byte[] serializedByteArray) throws Exception {
+    	if (serializedByteArray.length < 34 )
+    		throw new Exception("packet length is too short.");
         int start = 0;
         this.srcAddress = findNextString(start, serializedByteArray);
         this.dstAddress = findNextString(start, serializedByteArray);

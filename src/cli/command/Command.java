@@ -1,5 +1,7 @@
 package cli.command;
 
+import node.Node;
+
 public interface Command {
-    void execute();
+    void execute(Node node);
 }

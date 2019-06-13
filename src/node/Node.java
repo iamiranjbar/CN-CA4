@@ -13,22 +13,9 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.Semaphore;
 
 public class Node {
-
-	private static Node instance;
-
-	static {
-		try {
-			instance = new Node("C.lnx");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public static Node getInstance(){
-		return instance;
-	}
 
 	private String name;
 	private String ip;
@@ -38,12 +25,14 @@ public class Node {
 	//	private HashMap<Integer, > TODO: Register handler
 	private ForwardingTable forwardingTable;
 	private DV distanceVector;
+	static Semaphore semaphore = new Semaphore(1);
 
-	private Node(String fileName) throws IOException {
+	public Node(String fileName) throws IOException {
 		NodeDTO nodeDTO = LnxParser.parse(fileName);
 		this.name = nodeDTO.getName();
 		this.ip = nodeDTO.getIp();
 		this.port = nodeDTO.getPort();
+		System.out.println(this.port);
 		this.datagramSocket = new DatagramSocket(this.port);
 		this.datagramSocket.setSoTimeout(800);
 		this.interfaces = new ArrayList<>();
@@ -53,16 +42,20 @@ public class Node {
 		this.distanceVector = new DV();
 		this.fillDV();
 		this.notifyNeighbors();
-		Thread thread = new Thread(new CLI());
+		Thread thread = new Thread(new CLI(this));
 		thread.start();
+		System.out.println("12334");
 	}
 
 	public void run() throws IOException {
 		Date current = new Date();
 		while (true){
-			if ((new Date().getTime()) - current.getTime() > 1000 && this.distanceVector.isChanged())
+			if ((new Date().getTime()) - current.getTime() > 1000 && this.distanceVector.isChanged()) {
 				this.notifyNeighbors();
+//				System.out.println("notified!");
+			}
 			this.recieve();
+//			showDV();
 //			System.out.println("*****************");
 //			this.distanceVector.print();
 //			System.out.println("*****************");
@@ -96,11 +89,25 @@ public class Node {
 		for (Interface face: interfaces){
 			try {
 				byte[] recieved = face.receive();
+//				System.out.println("recived!");
 				IPDatagaram ipDatagaram = new IPDatagaram(recieved);
 				//TODO: Call handler for protocol null -> Update. Print, TTL--
-			} catch (IOException e) {
+				handel(ipDatagaram, face);
+//				showDV();
+			} catch (Exception e) {
 				continue;
 			}
+		}
+	}
+	
+	private void handel(IPDatagaram ipDatagaram, Interface face) throws InterruptedException {
+		semaphore.acquire();
+		try {
+			DV newDV = new DV(ipDatagaram.getData());
+			this.distanceVector.update(newDV, face.getId(), face.getReceiverVIp());
+			forwardingTable.update(distanceVector);
+		} finally {
+			semaphore.release();
 		}
 	}
 
@@ -108,6 +115,12 @@ public class Node {
 		System.out.println("id\tSource Address\tDestination Address");
 		for (Interface face:interfaces)
 			System.out.println(face);
+		System.out.println("****************************************************************");
+	}
+	
+	public void showDV() {
+		System.out.println("to\tfrom\tcost");
+		distanceVector.print();
 		System.out.println("****************************************************************");
 	}
 
@@ -118,5 +131,9 @@ public class Node {
 				", ip='" + ip +  +
 				'}';
 
+	}
+
+	public void showForwardingTable() {
+		forwardingTable.print();
 	}
 }
