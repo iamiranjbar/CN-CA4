@@ -6,8 +6,7 @@ public class Main {
 	public static void main(String[] args) {
 		Node node;
 		try {
-			node = new Node("A.lnx");
-			System.out.println();
+			node = Node.getInstance();
 			node.run();
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -1,5 +1,6 @@
 package node;
 
+import cli.CLI;
 import forwarding.ForwardingTable;
 import ip.IPDatagaram;
 import routing.DV;
@@ -14,6 +15,21 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class Node {
+
+	private static Node instance;
+
+	static {
+		try {
+			instance = new Node("C.lnx");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static Node getInstance(){
+		return instance;
+	}
+
 	private String name;
 	private String ip;
 	private int port;
@@ -23,7 +39,7 @@ public class Node {
 	private ForwardingTable forwardingTable;
 	private DV distanceVector;
 
-	public Node(String fileName) throws IOException {
+	private Node(String fileName) throws IOException {
 		NodeDTO nodeDTO = LnxParser.parse(fileName);
 		this.name = nodeDTO.getName();
 		this.ip = nodeDTO.getIp();
@@ -37,6 +53,8 @@ public class Node {
 		this.distanceVector = new DV();
 		this.fillDV();
 		this.notifyNeighbors();
+		Thread thread = new Thread(new CLI());
+		thread.start();
 	}
 
 	public void run() throws IOException {
@@ -45,9 +63,9 @@ public class Node {
 			if ((new Date().getTime()) - current.getTime() > 1000 && this.distanceVector.isChanged())
 				this.notifyNeighbors();
 			this.recieve();
-			System.out.println("*****************");
-			this.distanceVector.print();
-			System.out.println("*****************");
+//			System.out.println("*****************");
+//			this.distanceVector.print();
+//			System.out.println("*****************");
 		}
 	}
 
@@ -84,6 +102,13 @@ public class Node {
 				continue;
 			}
 		}
+	}
+
+	public void showInterfacesInfo(){
+		System.out.println("id\tSource Address\tDestination Address");
+		for (Interface face:interfaces)
+			System.out.println(face);
+		System.out.println("****************************************************************");
 	}
 
 	@Override

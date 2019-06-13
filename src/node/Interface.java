@@ -57,4 +57,9 @@ public class Interface {
 		datagramSocket.receive(p);
 		return p.getData();
 	}
+
+	@Override
+	public String toString() {
+		return id +"\t" + vIp + "\t\t" + receiverVIp;
+	}
 }
