@@ -17,7 +17,12 @@ public class DV {
 	private void fillTable(byte[] array) {
 		String temp = new String(array);
 		String[] splited = temp.split("\\s+");
+		int o = 0;
 		for(String part : splited) {
+			if(o == (splited.length - 1)) {
+				break;
+			}
+//			System.out.println(">>>>>>>>>>>>>>>>>> " + part);
 			String to = "";
 			int j = 0;
 			byte[] current = part.getBytes();
@@ -35,6 +40,7 @@ public class DV {
 				row[j++] = current[i];
 			}
 			table.put(to, new DistanceVectorRow(row));
+			o++;
 		}
 	}
 	

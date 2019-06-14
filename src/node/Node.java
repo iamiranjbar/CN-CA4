@@ -52,7 +52,9 @@ public class Node {
 		while (true){
 			if ((new Date().getTime()) - current.getTime() > 1000 && this.distanceVector.isChanged()) {
 				this.notifyNeighbors();
-//				System.out.println("notified!");
+//				System.out.println("*****************");
+//				this.distanceVector.print();
+//				System.out.println("*****************");
 			}
 			this.recieve();
 //			showDV();
@@ -73,6 +75,7 @@ public class Node {
 	private void fillDV(){
 		for (Interface face: interfaces){
 			this.distanceVector.update(face.getId(), face.getReceiverVIp(), 1);
+			this.distanceVector.update(face.getId(), face.getvIp(), 0);
 		}
 	}
 
@@ -89,8 +92,11 @@ public class Node {
 		for (Interface face: interfaces){
 			try {
 				byte[] recieved = face.receive();
-//				System.out.println("recived!");
+//				System.out.println(new String(recieved));
 				IPDatagaram ipDatagaram = new IPDatagaram(recieved);
+//				System.out.println(ipDatagaram.getDstAddress());
+//				System.out.println(ipDatagaram.getSrcAddress());
+//				System.out.println(new String(ipDatagaram.getData()));
 				//TODO: Call handler for protocol null -> Update. Print, TTL--
 				handel(ipDatagaram, face);
 //				showDV();
@@ -104,8 +110,13 @@ public class Node {
 		semaphore.acquire();
 		try {
 			DV newDV = new DV(ipDatagaram.getData());
+//			System.out.println("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL");
+//			newDV.print();
+//			System.out.println("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL");
 			this.distanceVector.update(newDV, face.getId(), face.getReceiverVIp());
 			forwardingTable.update(distanceVector);
+		} catch (Exception e) {
+			semaphore.release();
 		} finally {
 			semaphore.release();
 		}

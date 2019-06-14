@@ -23,39 +23,55 @@ public class IPDatagaram{
     public IPDatagaram(byte[] serializedByteArray) throws Exception {
     	if (serializedByteArray.length < 34 )
     		throw new Exception("packet length is too short.");
-        int start = 0;
-        this.srcAddress = findNextString(start, serializedByteArray);
-        this.dstAddress = findNextString(start, serializedByteArray);
-        this.totalLength = findNextInt(start, serializedByteArray);
-        this.protocolNum = findNextInt(start, serializedByteArray);
-        this.TTL = findNextInt(start, serializedByteArray);
+        Integer start = 0;
+        ArrayList<Object> temp = findNextString(start, serializedByteArray);
+        this.srcAddress = (String) temp.get(1);
+        start = (Integer) temp.get(0);
+        temp = findNextString(start, serializedByteArray);
+        this.dstAddress = (String) temp.get(1);
+        start = (Integer) temp.get(0); 
+        temp = findNextInt(start, serializedByteArray);
+        this.totalLength = (int) temp.get(1);
+        start = (Integer) temp.get(0);
+        temp = findNextInt(start, serializedByteArray);
+        this.protocolNum = (int) temp.get(1);
+        start = (Integer) temp.get(0);
+        temp = findNextInt(start, serializedByteArray);
+        this.TTL = (int) temp.get(1);
+        start = (Integer) temp.get(0);
         this.data = new byte[serializedByteArray.length - start];
         this.fillData(start, serializedByteArray);
     }
 
-    private void fillData(int start, byte[] byteArray){
+    private void fillData(Integer start, byte[] byteArray){
         int j = 0;
         for (int i = start; i < byteArray.length; i++) {
             this.data[j++] = byteArray[i];
         }
     }
 
-    private String findNextString(int start, byte[] byteArray){
+    private ArrayList<Object> findNextString(Integer start, byte[] byteArray){
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = start; i < byteArray.length; i++){
             if (byteArray[i] == '\0') {
                 start = i +1;
-                return stringBuilder.toString();
+                ArrayList<Object> res = new ArrayList<>();
+                res.add(start);
+                res.add(stringBuilder.toString());
+                return res;
             }
             stringBuilder.append((char)byteArray[i]);
         }
         return null;
     }
 
-    private int findNextInt(int start, byte[] byteArray){
+    private ArrayList<Object> findNextInt(Integer start, byte[] byteArray){
         byte[] intBytes = {byteArray[start++], byteArray[start++], byteArray[start++], byteArray[start++]};
         ByteBuffer bf = ByteBuffer.wrap(intBytes);
-        return bf.getInt();
+        ArrayList<Object> res = new ArrayList<>();
+        res.add(start);
+        res.add(bf.getInt());
+        return res;
     }
 
     public byte[] getBytes(){
