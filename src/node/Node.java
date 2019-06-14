@@ -25,8 +25,11 @@ public class Node {
 	//	private HashMap<Integer, > TODO: Register handler
 	private ForwardingTable forwardingTable;
 	private DV distanceVector;
+//	private int disableInterfaces;
+	private int maxCost;
 
 	public Node(String fileName) throws IOException {
+//		disableInterfaces = 0;
 		NodeDTO nodeDTO = LnxParser.parse(fileName);
 		this.name = nodeDTO.getName();
 		this.ip = nodeDTO.getIp();
@@ -45,10 +48,26 @@ public class Node {
 		thread.start();
 		System.out.println("12334");
 	}
+	
+	private void updatemaxCost() {
+		int temp = 0;
+		for( Interface face : interfaces) {
+			if (!face.isEnable()) {
+				return;
+			}
+		}
+		for(String ip : distanceVector.getDestinations()) {
+			if (temp < distanceVector.getCostTo(ip)) {
+				temp = distanceVector.getCostTo(ip);
+			}
+		}
+		maxCost = temp;
+	}
 
 	public void run() throws IOException {
 		Date current = new Date();
 		while (true){
+			updatemaxCost();
 			if ((new Date().getTime()) - current.getTime() > 1000 && this.distanceVector.isChanged()) {
 				this.notifyNeighbors();
 //				this.distanceVector.setUnchanged();
@@ -153,10 +172,10 @@ public class Node {
 	
 	private void handel(IPDatagaram ipDatagaram, Interface face) throws  IOException {
 			DV newDV = new DV(ipDatagaram.getData());
-			if (newDV.getCostTo(ipDatagaram.getDstAddress()) > 1) {
+			if (newDV.getCostTo(ipDatagaram.getDstAddress()) > maxCost) {
 				downInterface(findInterfaceId(ipDatagaram.getDstAddress()));
 				System.out.println("ok " + findInterfaceId(ipDatagaram.getDstAddress()));
-			} else if (newDV.getCostTo(ipDatagaram.getDstAddress()) <= 1 && !interfaces.get(findInterfaceId(ipDatagaram.getDstAddress())).isEnable()) {
+			} else if (newDV.getCostTo(ipDatagaram.getDstAddress()) <= maxCost && !interfaces.get(findInterfaceId(ipDatagaram.getDstAddress())).isEnable()) {
 				upInterface(findInterfaceId(ipDatagaram.getDstAddress()));
 				System.out.println("qd " + findInterfaceId(ipDatagaram.getDstAddress()));
 			}
