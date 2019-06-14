@@ -14,6 +14,7 @@ public class Interface {
 	private String receiverVIp;
 	private String receiverIp;
 	private int receiverPort;
+	private boolean isEnable;
 	private DatagramSocket datagramSocket;
 
 	public Interface(int id, String vIp, String receiverIp, String recieverVIp, int receiverPort, DatagramSocket datagramSocket)
@@ -24,6 +25,19 @@ public class Interface {
 		this.receiverVIp = recieverVIp;
 		this.receiverPort = receiverPort;
 		this.datagramSocket = datagramSocket;
+		this.isEnable = true;
+	}
+	
+	public boolean isEnable() {
+		return isEnable;
+	}
+	
+	public void disable() {
+		this.isEnable = false;
+	}
+	
+	public void enable() {
+		this.isEnable = true;
 	}
 
 	public int getId() {

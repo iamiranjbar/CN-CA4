@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 
 public class DV {
 
 	private HashMap<String, DistanceVectorRow> table;
 	private boolean isChanged = true;
-
+	static Semaphore semaphore = new Semaphore(1);
+	
 	public DV() {
 	    table = new HashMap<>();
 	}
@@ -51,20 +53,46 @@ public class DV {
 	
 	// TODO: this method helps to fill table from lnx file.
 	public void update(int from, String to, int cost) {
+		try {
+			semaphore.acquire();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		DistanceVectorRow distanceVectorRow = table.get(to);
 		if (distanceVectorRow == null) {
 			distanceVectorRow = new DistanceVectorRow();
 		}
 		distanceVectorRow.update(from, cost);
 		table.put(to, distanceVectorRow);
+		semaphore.release();
 	}
 
-	public void update(DV newDV, int interfaceId, String interfaceIp) {
+	public void update(DV newDV, int interfaceId, String senderIp, String reciverIp) {
+//		System.out.println(">>>>>>>>>>>>>>");
 //		this.print();
+//		System.out.println("llllllllllllllllllllllllllllllllllllll");
 //		newDV.print();
-		int costToNew = getCostTo(interfaceIp);
+//		System.out.println("pppppppppppppppppppppp");
+		int costToNew = getCostTo(senderIp);
+//		System.out.println(costToNew +" "+ senderIp);
+		if (newDV.getCostTo(reciverIp) == 66 || newDV.getCostTo(senderIp) == 66) {
+			for(String ip: table.keySet()) {
+				if (table.get(ip).getInterfaceId() == interfaceId) {
+					update(interfaceId, ip, 66);
+				}
+			}
+			this.isChanged = true;
+		}
 		for(String item : table.keySet()) {
 			try {
+//				if (newDV.getCostTo(item) == 66 && table.get(item).getInterfaceId() == interfaceId) {
+//					for(String ip: table.keySet()) {
+//						if (table.get(ip).getInterfaceId() == interfaceId) {
+//							update(interfaceId, ip, 66);
+//						}
+//					}
+//					this.isChanged = true;
+//				} else 
 				if (getCostTo(item) > (costToNew + newDV.getCostTo(item))) {
 					update(interfaceId, item, costToNew + newDV.getCostTo(item));
 					this.isChanged = true;
@@ -79,9 +107,10 @@ public class DV {
 				this.isChanged = true;
 			}
 		}
+//		this.print();
 	}
 
-	private int getCostTo(String item) {
+	public int getCostTo(String item) {
 		return table.get(item).getCost();
 	}
 	

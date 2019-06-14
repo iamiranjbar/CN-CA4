@@ -25,7 +25,6 @@ public class Node {
 	//	private HashMap<Integer, > TODO: Register handler
 	private ForwardingTable forwardingTable;
 	private DV distanceVector;
-	static Semaphore semaphore = new Semaphore(1);
 
 	public Node(String fileName) throws IOException {
 		NodeDTO nodeDTO = LnxParser.parse(fileName);
@@ -52,6 +51,7 @@ public class Node {
 		while (true){
 			if ((new Date().getTime()) - current.getTime() > 1000 && this.distanceVector.isChanged()) {
 				this.notifyNeighbors();
+//				this.distanceVector.setUnchanged();
 //				System.out.println("*****************");
 //				this.distanceVector.print();
 //				System.out.println("*****************");
@@ -62,6 +62,38 @@ public class Node {
 //			this.distanceVector.print();
 //			System.out.println("*****************");
 		}
+	}
+	
+	public void upInterface(int id) throws IOException {
+		interfaces.get(id).enable();
+		Interface temp =  interfaces.get(id);
+		this.distanceVector.update(temp.getId(), temp.getvIp(), 0);
+		this.distanceVector.update(temp.getId(), temp.getReceiverVIp(), 1);
+		notifyNeighbors();
+	}
+	
+	public void downInterface(int id) throws IOException {
+		Interface temp =  interfaces.get(id);
+		this.distanceVector.update(temp.getId(), temp.getReceiverVIp(), 66);
+		for (String ip : distanceVector.getDestinations()) {
+			if (distanceVector.getInterfaceOfIp(ip) == id && !localAddress(ip)) {
+				this.distanceVector.update(temp.getId(), ip, 66);
+			}
+		}
+		System.out.println(">>>>>>>>>>>>>>>");
+		this.distanceVector.print();
+		System.out.println("<<<<<<<<<<<<<<<");
+		notifyNeighbors();
+		this.interfaces.get(id).disable();
+	}
+	
+	private boolean localAddress(String ip) {
+		for (Interface face : interfaces) {
+			if (face.getvIp().equals(ip)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private void fillInterfaces(NodeDTO nodeDTO) throws SocketException {
@@ -82,50 +114,65 @@ public class Node {
 	public void notifyNeighbors() throws IOException {
 		byte[] updatedDV = this.distanceVector.getByteArray();
 		for (Interface face:interfaces) {
-			IPDatagaram ipDatagaram = new IPDatagaram(face.getvIp(), face.getReceiverVIp(), updatedDV, updatedDV.length,
-					200, 150);
-			face.send(ipDatagaram.getBytes());
+			if(face.isEnable()) {
+				IPDatagaram ipDatagaram = new IPDatagaram(face.getvIp(), face.getReceiverVIp(), updatedDV, updatedDV.length,
+						200, 150);
+				face.send(ipDatagaram.getBytes());
+			}
 		}
 	}
 
 	public void recieve(){
 		for (Interface face: interfaces){
-			try {
-				byte[] recieved = face.receive();
-//				System.out.println(new String(recieved));
-				IPDatagaram ipDatagaram = new IPDatagaram(recieved);
-//				System.out.println(ipDatagaram.getDstAddress());
-//				System.out.println(ipDatagaram.getSrcAddress());
-//				System.out.println(new String(ipDatagaram.getData()));
-				//TODO: Call handler for protocol null -> Update. Print, TTL--
-				handel(ipDatagaram, face);
-//				showDV();
-			} catch (Exception e) {
-				continue;
-			}
+			 if (face.isEnable()){
+				try {
+					byte[] recieved = face.receive();
+	//				System.out.println(new String(recieved));
+					IPDatagaram ipDatagaram = new IPDatagaram(recieved);
+	//				System.out.println(ipDatagaram.getDstAddress());
+	//				System.out.println(ipDatagaram.getSrcAddress());
+	//				System.out.println(new String(ipDatagaram.getData()));
+					//TODO: Call handler for protocol null -> Update. Print, TTL--
+					handel(ipDatagaram, face);
+	//				showDV();
+				} catch (Exception e) {
+					continue;
+				}
+			 }
 		}
 	}
 	
-	private void handel(IPDatagaram ipDatagaram, Interface face) throws InterruptedException {
-		semaphore.acquire();
-		try {
+	private int findInterfaceId(String ip) {
+		for(Interface face : interfaces) {
+			if (face.getvIp().equals(ip)) {
+				return face.getId();
+			}
+		}
+		return 0;
+	}
+	
+	private void handel(IPDatagaram ipDatagaram, Interface face) throws  IOException {
 			DV newDV = new DV(ipDatagaram.getData());
+			if (newDV.getCostTo(ipDatagaram.getDstAddress()) > 1) {
+				downInterface(findInterfaceId(ipDatagaram.getDstAddress()));
+				System.out.println("ok " + findInterfaceId(ipDatagaram.getDstAddress()));
+			} else if (newDV.getCostTo(ipDatagaram.getDstAddress()) <= 1 && !interfaces.get(findInterfaceId(ipDatagaram.getDstAddress())).isEnable()) {
+				upInterface(findInterfaceId(ipDatagaram.getDstAddress()));
+				System.out.println("qd " + findInterfaceId(ipDatagaram.getDstAddress()));
+			}
 //			System.out.println("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL");
 //			newDV.print();
 //			System.out.println("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL");
-			this.distanceVector.update(newDV, face.getId(), face.getReceiverVIp());
+			this.distanceVector.update(newDV, findInterfaceId(ipDatagaram.getDstAddress()), ipDatagaram.getSrcAddress(), ipDatagaram.getDstAddress());
 			forwardingTable.update(distanceVector);
-		} catch (Exception e) {
-			semaphore.release();
-		} finally {
-			semaphore.release();
-		}
 	}
 
 	public void showInterfacesInfo(){
 		System.out.println("id\tSource Address\tDestination Address");
-		for (Interface face:interfaces)
-			System.out.println(face);
+		for (Interface face:interfaces) {
+			if(face.isEnable())
+				System.out.println(face);
+		}
 		System.out.println("****************************************************************");
 	}
 	

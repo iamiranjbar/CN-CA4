@@ -1,8 +1,10 @@
 package cli;
 
 import cli.command.Command;
+import cli.command.DownCommand;
 import cli.command.InterfacesCommand;
 import cli.command.RoutesCommand;
+import cli.command.UpCommand;
 import node.Node;
 
 import java.util.Scanner;
@@ -29,6 +31,10 @@ public class CLI implements Runnable {
                 return new InterfacesCommand();
             case "routes":
                 return new RoutesCommand();
+            case "down":
+                return new DownCommand(Integer.parseInt(splittedCommand[1]));
+            case "up":
+            	return new UpCommand(Integer.parseInt(splittedCommand[1]));
             default:
                 throw new Exception("Wrong command!");
         }
