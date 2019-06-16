@@ -2,6 +2,8 @@ package node;
 
 import cli.CLI;
 import forwarding.ForwardingTable;
+import handler.DataHandler;
+import handler.RoutingHandler;
 import ip.IPDatagaram;
 import routing.DV;
 import tools.LinkDTO;
@@ -9,10 +11,13 @@ import tools.LnxParser;
 import tools.NodeDTO;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 
 public class Node {
 
@@ -22,12 +27,12 @@ public class Node {
 	private int port;
 	private DatagramSocket datagramSocket;
 	private ArrayList<Interface> interfaces;
-	//	private HashMap<Integer, > TODO: Register handler
+	private HashMap<Integer, Method> handlers;
 	private ForwardingTable forwardingTable;
 	private DV distanceVector;
 	private int maxCost;
 
-	public Node(String fileName) throws IOException {
+	public Node(String fileName) throws IOException, NoSuchMethodException {
 		NodeDTO nodeDTO = LnxParser.parse(fileName);
 		this.name = nodeDTO.getName();
 		this.isRunning = true;
@@ -43,6 +48,8 @@ public class Node {
 		this.notifyNeighbors();
 		Thread thread = new Thread(new CLI(this));
 		thread.start();
+		this.registerHandler(200, RoutingHandler.class.getMethod("run", Node.class, IPDatagaram.class));
+		this.registerHandler(0, DataHandler.class.getMethod("run", Node.class, IPDatagaram.class));
 	}
 
 	public void quit() {
@@ -74,16 +81,8 @@ public class Node {
 			updateMaxCost();
 			if ((new Date().getTime()) - current.getTime() > 1000 && this.distanceVector.isChanged()) {
 				this.notifyNeighbors();
-//				this.distanceVector.setUnchanged();
-//				System.out.println("*****************");
-//				this.distanceVector.print();
-//				System.out.println("*****************");
 			}
 			this.recieve();
-//			showDV();
-//			System.out.println("*****************");
-//			this.distanceVector.print();
-//			System.out.println("*****************");
 		}
 	}
 	
@@ -103,9 +102,6 @@ public class Node {
 				this.distanceVector.update(temp.getId(), ip, 66);
 			}
 		}
-		System.out.println(">>>>>>>>>>>>>>>");
-		this.distanceVector.print();
-		System.out.println("<<<<<<<<<<<<<<<");
 		notifyNeighbors();
 		this.interfaces.get(id).disable();
 	}
@@ -146,6 +142,7 @@ public class Node {
 	}
 
 	public void sendData(String dstVIp, int protocolNum, String payload) throws IOException { //TODO: Should test with handlers
+		//TODO: if not have dstVip should flood?!
 		int outInterface = forwardingTable.getId(dstVIp);
 		Interface face = interfaces.get(outInterface-1);
 		byte[] sendBytes = payload.getBytes();
@@ -159,14 +156,12 @@ public class Node {
 			 if (face.isEnable()){
 				try {
 					byte[] recieved = face.receive();
-//					System.out.println(new String(recieved));
 					IPDatagaram ipDatagaram = new IPDatagaram(recieved);
-//					System.out.println(ipDatagaram.getDstAddress());
-//					System.out.println(ipDatagaram.getSrcAddress());
-//					System.out.println(new String(ipDatagaram.getData()));
-					//TODO: Call handler for protocol null -> Update. Print, TTL--
-					handle(ipDatagaram);
-					showDV();
+					int protocolNum = ipDatagaram.getProtocolNum();
+					handlers.get(protocolNum).invoke(null, this, ipDatagaram);
+					if (ipDatagaram.getDstAddress() != face.getvIp())
+						this.sendData(ipDatagaram.getDstAddress(), protocolNum, Arrays.toString(ipDatagaram.getData()));
+//					showDV();
 				} catch (Exception e) {
 					continue;
 				}
@@ -174,27 +169,13 @@ public class Node {
 		}
 	}
 	
-	private int findInterfaceId(String ip) {
+	public int findInterfaceId(String ip) {
 		for(Interface face : interfaces) {
 			if (face.getvIp().equals(ip)) {
 				return face.getId();
 			}
 		}
 		return 0;
-	}
-	
-	private void handle(IPDatagaram ipDatagaram) throws  IOException {
-			DV newDV = new DV(ipDatagaram.getData());
-			if (newDV.getCostTo(ipDatagaram.getDstAddress()) > maxCost) {
-				downInterface(findInterfaceId(ipDatagaram.getDstAddress()));
-				System.out.println("ok " + findInterfaceId(ipDatagaram.getDstAddress()));
-			} else if (newDV.getCostTo(ipDatagaram.getDstAddress()) <= maxCost &&
-					!interfaces.get(findInterfaceId(ipDatagaram.getDstAddress())).isEnable()) {
-				upInterface(findInterfaceId(ipDatagaram.getDstAddress()));
-				System.out.println("qd " + findInterfaceId(ipDatagaram.getDstAddress()));
-			}
-			this.distanceVector.update(newDV, findInterfaceId(ipDatagaram.getDstAddress()), ipDatagaram.getSrcAddress(), ipDatagaram.getDstAddress());
-			forwardingTable.update(distanceVector);
 	}
 
 	public void showInterfacesInfo(){
@@ -223,5 +204,22 @@ public class Node {
 
 	public void showForwardingTable() {
 		forwardingTable.print();
+	}
+
+	public int getMaxCost() {
+		return this.maxCost;
+	}
+
+	public Interface getInterfaceById(int interfaceId) {
+		return interfaces.get(interfaceId);
+	}
+
+	public void updateRoutingTables (DV newDV, int interfaceId, IPDatagaram ipDatagaram) {
+		this.distanceVector.update(newDV, interfaceId, ipDatagaram.getSrcAddress(), ipDatagaram.getDstAddress());
+		forwardingTable.update(distanceVector);
+	}
+
+	public void registerHandler(int protocolNum, Method method) {
+		handlers.put(protocolNum, method);
 	}
 }

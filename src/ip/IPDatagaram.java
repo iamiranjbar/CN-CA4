@@ -2,6 +2,7 @@ package ip;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class IPDatagaram{
     private String srcAddress;
@@ -124,5 +125,17 @@ public class IPDatagaram{
 
     public String getSrcAddress() {
         return srcAddress;
+    }
+
+    @Override
+    public String toString() {
+        return "IPDatagaram{" +
+                "srcAddress='" + srcAddress + '\'' +
+                ", dstAddress='" + dstAddress + '\'' +
+                ", data=" + Arrays.toString(data) +
+                ", totalLength=" + totalLength +
+                ", protocolNum=" + protocolNum +
+                ", TTL=" + TTL +
+                '}';
     }
 }
