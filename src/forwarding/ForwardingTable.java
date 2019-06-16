@@ -13,8 +13,8 @@ public class ForwardingTable {
 		table = new HashMap<>();
 	}
 	
-	public void update(String vIp, int port) {
-		table.put(vIp, port);
+	public void update(String vIp, int id) {
+		table.put(vIp, id);
 	}
 	
 	public void update(DV dv) {
@@ -23,7 +23,7 @@ public class ForwardingTable {
 		}
 	}
 	
-	public int getPort(String vIp) {
+	public int getId(String vIp) {
 		return table.get(vIp);
 	}
 

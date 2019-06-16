@@ -13,7 +13,6 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.concurrent.Semaphore;
 
 public class Node {
 
@@ -25,20 +24,16 @@ public class Node {
 	//	private HashMap<Integer, > TODO: Register handler
 	private ForwardingTable forwardingTable;
 	private DV distanceVector;
-//	private int disableInterfaces;
 	private int maxCost;
 
 	public Node(String fileName) throws IOException {
-//		disableInterfaces = 0;
 		NodeDTO nodeDTO = LnxParser.parse(fileName);
 		this.name = nodeDTO.getName();
 		this.ip = nodeDTO.getIp();
 		this.port = nodeDTO.getPort();
-		System.out.println(this.port);
 		this.datagramSocket = new DatagramSocket(this.port);
 		this.datagramSocket.setSoTimeout(800);
 		this.interfaces = new ArrayList<>();
-//		this.interfaces.add(new Interface(0, "192.168.0.1", 5001, "127.0.0.1","192.168.0.2",  5000));
 		this.fillInterfaces(nodeDTO);
 		this.forwardingTable = new ForwardingTable();
 		this.distanceVector = new DV();
@@ -46,10 +41,9 @@ public class Node {
 		this.notifyNeighbors();
 		Thread thread = new Thread(new CLI(this));
 		thread.start();
-		System.out.println("12334");
 	}
 	
-	private void updatemaxCost() {
+	private void updateMaxCost() {
 		int temp = 0;
 		for( Interface face : interfaces) {
 			if (!face.isEnable()) {
@@ -67,7 +61,7 @@ public class Node {
 	public void run() throws IOException {
 		Date current = new Date();
 		while (true){
-			updatemaxCost();
+			updateMaxCost();
 			if ((new Date().getTime()) - current.getTime() > 1000 && this.distanceVector.isChanged()) {
 				this.notifyNeighbors();
 //				this.distanceVector.setUnchanged();
@@ -141,19 +135,28 @@ public class Node {
 		}
 	}
 
+	public void sendData(String dstVIp, int protocolNum, String payload) throws IOException { //TODO: Should test with handlers
+		int outInterface = forwardingTable.getId(dstVIp);
+		Interface face = interfaces.get(outInterface-1);
+		byte[] sendBytes = payload.getBytes();
+		IPDatagaram ipDatagaram = new IPDatagaram(face.getvIp(), face.getReceiverVIp(), sendBytes, sendBytes.length,
+				protocolNum, 150);
+		face.send(ipDatagaram.getBytes());
+	}
+
 	public void recieve(){
 		for (Interface face: interfaces){
 			 if (face.isEnable()){
 				try {
 					byte[] recieved = face.receive();
-	//				System.out.println(new String(recieved));
+//					System.out.println(new String(recieved));
 					IPDatagaram ipDatagaram = new IPDatagaram(recieved);
-	//				System.out.println(ipDatagaram.getDstAddress());
-	//				System.out.println(ipDatagaram.getSrcAddress());
-	//				System.out.println(new String(ipDatagaram.getData()));
+//					System.out.println(ipDatagaram.getDstAddress());
+//					System.out.println(ipDatagaram.getSrcAddress());
+//					System.out.println(new String(ipDatagaram.getData()));
 					//TODO: Call handler for protocol null -> Update. Print, TTL--
-					handel(ipDatagaram, face);
-	//				showDV();
+					handle(ipDatagaram);
+					showDV();
 				} catch (Exception e) {
 					continue;
 				}
@@ -170,18 +173,16 @@ public class Node {
 		return 0;
 	}
 	
-	private void handel(IPDatagaram ipDatagaram, Interface face) throws  IOException {
+	private void handle(IPDatagaram ipDatagaram) throws  IOException {
 			DV newDV = new DV(ipDatagaram.getData());
 			if (newDV.getCostTo(ipDatagaram.getDstAddress()) > maxCost) {
 				downInterface(findInterfaceId(ipDatagaram.getDstAddress()));
 				System.out.println("ok " + findInterfaceId(ipDatagaram.getDstAddress()));
-			} else if (newDV.getCostTo(ipDatagaram.getDstAddress()) <= maxCost && !interfaces.get(findInterfaceId(ipDatagaram.getDstAddress())).isEnable()) {
+			} else if (newDV.getCostTo(ipDatagaram.getDstAddress()) <= maxCost &&
+					!interfaces.get(findInterfaceId(ipDatagaram.getDstAddress())).isEnable()) {
 				upInterface(findInterfaceId(ipDatagaram.getDstAddress()));
 				System.out.println("qd " + findInterfaceId(ipDatagaram.getDstAddress()));
 			}
-//			System.out.println("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL");
-//			newDV.print();
-//			System.out.println("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL");
 			this.distanceVector.update(newDV, findInterfaceId(ipDatagaram.getDstAddress()), ipDatagaram.getSrcAddress(), ipDatagaram.getDstAddress());
 			forwardingTable.update(distanceVector);
 	}

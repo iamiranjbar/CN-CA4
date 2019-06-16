@@ -1,11 +1,8 @@
 package cli;
 
-import cli.command.Command;
-import cli.command.DownCommand;
-import cli.command.InterfacesCommand;
-import cli.command.RoutesCommand;
-import cli.command.UpCommand;
+import cli.command.*;
 import node.Node;
+import tools.StringArrayCollector;
 
 import java.util.Scanner;
 
@@ -35,6 +32,9 @@ public class CLI implements Runnable {
                 return new DownCommand(Integer.parseInt(splittedCommand[1]));
             case "up":
             	return new UpCommand(Integer.parseInt(splittedCommand[1]));
+            case "send":
+                return new SendCommand(splittedCommand[1], Integer.parseInt(splittedCommand[2]),
+                        StringArrayCollector.join(splittedCommand, " ", 3, splittedCommand.length));
             default:
                 throw new Exception("Wrong command!");
         }

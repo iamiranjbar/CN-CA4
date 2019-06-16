@@ -17,8 +17,7 @@ public class Interface {
 	private boolean isEnable;
 	private DatagramSocket datagramSocket;
 
-	public Interface(int id, String vIp, String receiverIp, String recieverVIp, int receiverPort, DatagramSocket datagramSocket)
-			throws SocketException {
+	public Interface(int id, String vIp, String receiverIp, String recieverVIp, int receiverPort, DatagramSocket datagramSocket) {
 		this.id = id;
 		this.vIp = vIp;
 		this.receiverIp = receiverIp;
