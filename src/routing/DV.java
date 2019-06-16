@@ -51,7 +51,6 @@ public class DV {
 		fillTable(array);
 	}
 	
-	// TODO: this method helps to fill table from lnx file.
 	public void update(int from, String to, int cost) {
 		try {
 			semaphore.acquire();

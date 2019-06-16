@@ -35,6 +35,8 @@ public class CLI implements Runnable {
             case "send":
                 return new SendCommand(splittedCommand[1], Integer.parseInt(splittedCommand[2]),
                         StringArrayCollector.join(splittedCommand, " ", 3, splittedCommand.length));
+            case "q":
+                return new QuitCommand();
             default:
                 throw new Exception("Wrong command!");
         }
@@ -42,7 +44,7 @@ public class CLI implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
+        while (node.isRunning()) {
             try {
                 String[] splittedCommands = this.parseCommand(this.getCommand());
                 Command command = this.createCommand(splittedCommands);

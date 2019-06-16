@@ -17,6 +17,7 @@ import java.util.Date;
 public class Node {
 
 	private String name;
+	private boolean isRunning;
 	private String ip;
 	private int port;
 	private DatagramSocket datagramSocket;
@@ -29,6 +30,7 @@ public class Node {
 	public Node(String fileName) throws IOException {
 		NodeDTO nodeDTO = LnxParser.parse(fileName);
 		this.name = nodeDTO.getName();
+		this.isRunning = true;
 		this.ip = nodeDTO.getIp();
 		this.port = nodeDTO.getPort();
 		this.datagramSocket = new DatagramSocket(this.port);
@@ -42,7 +44,15 @@ public class Node {
 		Thread thread = new Thread(new CLI(this));
 		thread.start();
 	}
-	
+
+	public void quit() {
+		this.isRunning = false;
+	}
+
+	public boolean isRunning(){
+		return isRunning;
+	}
+
 	private void updateMaxCost() {
 		int temp = 0;
 		for( Interface face : interfaces) {
